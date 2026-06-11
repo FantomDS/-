@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ author.name }} - Russian Scholar</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/scholar.css') }}">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="bi bi-book"></i> Russian Scholar
+            </a>
+            <form action="/search" method="GET" class="d-flex flex-grow-1 mx-3">
+                <input type="text" name="q" class="form-control" placeholder="Поиск статей...">
+                <button class="btn btn-light ms-2" type="submit"><i class="bi bi-search"></i></button>
+            </form>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Главная</a></li>
+                <li class="breadcrumb-item active">{{ author.name }}</li>
+            </ol>
+        </nav>
+
+        <div class="author-page">
+            <h2>{{ author.name }}</h2>
+            
+            {% if author.affiliation %}
+            <div class="affiliation">
+                <i class="bi bi-building"></i> {{ author.affiliation }}
+            </div>
+            {% endif %}
+            
+            {% if author.orcid %}
+            <div class="mb-3">
+                <a href="https://orcid.org/{{ author.orcid }}" target="_blank" class="text-muted">
+                    <i class="bi bi-person-badge"></i> ORCID: {{ author.orcid }}
+                </a>
+            </div>
+            {% endif %}
+            
+            <!-- author.html - исправленное отображение метрик -->
+            <div class="author-metrics">
+                <div class="metric-box">
+                    <div class="metric-value">{{ author.h_index or 0 }}</div>
+                    <div class="metric-label">h-индекс</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">{{ author.total_articles or 0 }}</div>
+                    <div class="metric-label">Публикаций</div>
+                </div>
+                <div class="metric-box">
+                    <div class="metric-value">{{ author.total_citations or 0 }}</div>
+                    <div class="metric-label">Цитирований</div>
+                </div>
+            </div>
+            
+            <h5 class="mt-4 mb-3">Публикации ({{ author.articles|length }})</h5>
+            
+            {% if author.articles %}
+                {% for article in author.articles %}
+                <div class="result-card">
+                    <h6>
+                        <a href="/article/{{ article.id }}">{{ article.title }}</a>
+                    </h6>
+                    <div class="authors">
+                        {% for coauthor in article.authors[:5] %}
+                            <a href="/author/{{ coauthor.author_id }}">{{ coauthor.name }}</a>
+                            {% if not loop.last %}, {% endif %}
+                        {% endfor %}
+                        {% if article.authors|length > 5 %} и др.{% endif %}
+                    </div>
+                    <div class="meta">
+                        <span class="me-3">{{ article.source }}</span>
+                        <span class="me-3">
+                            {% if article.published_date %}
+                                {% set pub_date = article.published_date[:10] %}
+                                {{ pub_date[8:10] }}.{{ pub_date[5:7] }}.{{ pub_date[0:4] }}
+                            {% else %}
+                                н/д
+                            {% endif %}
+                        </span>
+                        <span>Цитирований: {{ article.citation_count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted">Нет публикаций</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="mt-5 py-3 bg-light">
+        <div class="container text-center text-muted">
+            Russian Scholar &copy; 2026
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
